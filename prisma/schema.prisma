@@ -1,0 +1,300 @@
+// generator client {
+//   provider = "prisma-client-js"
+// }
+generator client {
+	provider = "prisma-client"
+	output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model badges {
+  id                Int           @id @default(autoincrement())
+  name              String        @unique(map: "name") @db.VarChar(50)
+  tier              String        @db.VarChar(20)
+  required_sessions Int
+  user_badges       user_badges[]
+}
+
+model chat_messages {
+  id                                     BigInt    @id @default(autoincrement())
+  sender_id                              String    @db.VarChar(36)
+  receiver_id                            String?   @db.VarChar(36)
+  session_group_id                       String?   @db.VarChar(36)
+  message_text                           String    @db.Text
+  is_read                                Boolean?  @default(false)
+  created_at                             DateTime? @default(now()) @db.Timestamp(0)
+  users_chat_messages_receiver_idTousers users?    @relation("chat_messages_receiver_idTousers", fields: [receiver_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_chat_receiver")
+  users_chat_messages_sender_idTousers   users     @relation("chat_messages_sender_idTousers", fields: [sender_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_chat_sender")
+  sessions                               sessions? @relation(fields: [session_group_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_chat_session")
+
+  @@index([created_at], map: "idx_chat_messages_timestamp")
+  @@index([receiver_id], map: "receiver_id")
+  @@index([sender_id], map: "sender_id")
+  @@index([session_group_id], map: "session_group_id")
+}
+
+model friendships {
+  id                                      Int                @id @default(autoincrement())
+  user_one_id                             String             @db.VarChar(36)
+  user_two_id                             String             @db.VarChar(36)
+  status                                  friendships_status @default(PENDING)
+  action_user_id                          String             @db.VarChar(36)
+  users_friendships_action_user_idTousers users              @relation("friendships_action_user_idTousers", fields: [action_user_id], references: [id], onUpdate: Restrict, map: "fk_friend_action")
+  users_friendships_user_one_idTousers    users              @relation("friendships_user_one_idTousers", fields: [user_one_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_friend_user1")
+  users_friendships_user_two_idTousers    users              @relation("friendships_user_two_idTousers", fields: [user_two_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_friend_user2")
+
+  @@index([action_user_id], map: "action_user_id")
+  @@index([user_one_id, user_two_id], map: "friends_index")
+  @@index([user_two_id], map: "user_two_id")
+}
+
+model quiz_attempts {
+  id           Int       @id @default(autoincrement())
+  quiz_id      String    @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  user_id      String    @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  user_answers String    @db.LongText
+  score        Int?      @default(0)
+  submitted_at DateTime? @default(now()) @db.Timestamp(0)
+  quizzes      quizzes   @relation(fields: [quiz_id], references: [id], onDelete: Cascade, map: "fk_attempt_quiz")
+  users        users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_attempt_user")
+
+  @@index([quiz_id], map: "quiz_id")
+  @@index([user_id], map: "user_id")
+}
+
+model quizzes {
+  id                String                    @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  creator_id        String                    @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  questions_payload String                    @db.LongText
+  QuizTitle         String                    @default("Quiz") @db.VarChar(255)
+  right_answers     String                    @db.LongText
+  moderation_status quizzes_moderation_status @default(PENDING)
+  ai_feedback       String?                   @db.Text
+  created_at        DateTime?                 @default(now()) @db.Timestamp(0)
+  quiz_attempts     quiz_attempts[]
+  users             users                     @relation(fields: [creator_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_quiz_creator")
+
+  @@index([creator_id], map: "creator_id")
+}
+
+model session_attendees {
+  session_id      String                   @db.VarChar(36)
+  user_id         String                   @db.VarChar(36)
+  status          session_attendees_status @default(INVITED)
+  feedback_rating Int?
+  feedback_text   String?                  @db.Text
+  sessions        sessions                 @relation(fields: [session_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_attendee_session")
+  users           users                    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_attendee_user")
+
+  @@id([session_id, user_id])
+  @@index([user_id], map: "user_id")
+}
+
+model sessions {
+  id                String              @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  host_id           String              @db.VarChar(36)
+  title             String              @db.VarChar(150)
+  topic             String              @db.Text
+  type              sessions_type
+  privacy           sessions_privacy    @default(PUBLIC)
+  google_meet_link  String?             @db.Text
+  location_room     String?             @db.VarChar(50)
+  scheduled_start   DateTime            @db.Timestamp(0)
+  scheduled_end     DateTime            @db.Timestamp(0)
+  status            sessions_status     @default(UPCOMING)
+  ai_summary        String?             @db.Text
+  created_at        DateTime?           @default(now()) @db.Timestamp(0)
+  chat_messages     chat_messages[]
+  session_attendees session_attendees[]
+  users             users               @relation(fields: [host_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_session_host")
+
+  @@index([host_id], map: "host_id")
+  @@index([location_room, scheduled_start, scheduled_end], map: "idx_sessions_room_time")
+}
+
+model skills {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique(map: "name") @db.VarChar(50)
+  type        skills_type
+  user_skills user_skills[]
+}
+
+model user_badges {
+  user_id   String    @db.VarChar(36)
+  badge_id  Int
+  earned_at DateTime? @default(now()) @db.Timestamp(0)
+  badges    badges    @relation(fields: [badge_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_userbadge_badge")
+  users     users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_userbadge_user")
+
+  @@id([user_id, badge_id])
+  @@index([badge_id], map: "badge_id")
+}
+
+model user_skills {
+  user_id           String @db.VarChar(36)
+  skill_id          Int
+  proficiency_stars Int
+  skills            skills @relation(fields: [skill_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_userskill_skill")
+  users             users  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_userskill_user")
+
+  @@id([user_id, skill_id])
+  @@index([skill_id], map: "skill_id")
+}
+
+model users {
+  id                                             String              @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  first_name                                     String              @db.VarChar(50)
+  last_name                                      String              @db.VarChar(50)
+  email                                          String              @unique(map: "email") @db.VarChar(100)
+  password_hash                                  String?             @db.Text
+  phone_number                                   String?             @db.VarChar(20)
+  country                                        String?             @db.VarChar(50)
+  city                                           String?             @db.VarChar(50)
+  age                                            Int?
+  status                                         users_status
+  institution_or_job                             String?             @db.VarChar(100)
+  avatar_url                                     String?             @default("https://assets.platform.com/default-avatar.png") @db.VarChar(255)
+  is_premium                                     Boolean?            @default(false)
+  created_at                                     DateTime?           @default(now()) @db.Timestamp(0)
+  Connection_Connection_receiverIdTousers        Connection[]        @relation("Connection_receiverIdTousers")
+  Connection_Connection_senderIdTousers          Connection[]        @relation("Connection_senderIdTousers")
+  chat_messages_chat_messages_receiver_idTousers chat_messages[]     @relation("chat_messages_receiver_idTousers")
+  chat_messages_chat_messages_sender_idTousers   chat_messages[]     @relation("chat_messages_sender_idTousers")
+  friendships_friendships_action_user_idTousers  friendships[]       @relation("friendships_action_user_idTousers")
+  friendships_friendships_user_one_idTousers     friendships[]       @relation("friendships_user_one_idTousers")
+  friendships_friendships_user_two_idTousers     friendships[]       @relation("friendships_user_two_idTousers")
+  quiz_attempts                                  quiz_attempts[]
+  quizzes                                        quizzes[]
+  session_attendees                              session_attendees[]
+  sessions                                       sessions[]
+  user_badges                                    user_badges[]
+  user_skills                                    user_skills[]
+  wallets                                        wallets?
+
+  bio                                            String?
+  lastSeenAt                                     DateTime?
+  location                                       String
+  notifications                                  Notification[]
+  @@index([city, status], map: "idx_users_city_status")
+}
+
+model wallet_transactions {
+  id          String                   @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  user_id     String                   @db.VarChar(36)
+  amount      Int
+  type        wallet_transactions_type
+  description String?                  @db.Text
+  created_at  DateTime?                @default(now()) @db.Timestamp(0)
+  wallets     wallets                  @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "fk_transaction_wallet")
+
+  @@index([user_id], map: "user_id")
+}
+
+model wallets {
+  user_id             String                @id @db.VarChar(36)
+  balance             Int                   @default(100)
+  updated_at          DateTime?             @default(now()) @db.Timestamp(0)
+  wallet_transactions wallet_transactions[]
+  users               users                 @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_wallet_user")
+}
+
+model Connection {
+  id                                 String            @id @default(dbgenerated("(uuid())"))
+  senderId                           String            @db.VarChar(36)
+  receiverId                         String            @db.VarChar(36)
+  status                             Connection_status @default(PENDING)
+
+  receiver                           users             @relation("Connection_receiverIdTousers", fields: [receiverId], references: [id], onDelete: Cascade, map: "fk_users_reciver_id")
+  sender                             users             @relation("Connection_senderIdTousers", fields: [senderId], references: [id], onDelete: Cascade, map: "fk_users_sender_id")
+
+  createdAt                          DateTime          @default(now())
+  updatedAt                          DateTime          @updatedAt
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId])
+  @@index([senderId])
+}
+
+
+
+model Notification {
+	id						String				@id @default(uuid())
+	userId					String
+	type					NotificationType
+	message					String?
+	isRead					Boolean				@default(false)
+	createdAt				DateTime			@default(now())
+
+	user	users @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+	@@index([userId])
+}
+
+enum NotificationType {
+	CONNECTION_REQUEST
+	CONNECTION_ACCEPTED
+}
+
+enum session_attendees_status {
+  INVITED
+  ACCEPTED
+  REJECTED
+  ATTENDED
+}
+
+enum skills_type {
+  TECHNICAL
+  SOFT
+}
+
+enum friendships_status {
+  PENDING
+  ACCEPTED
+  BLOCKED
+}
+
+enum quizzes_moderation_status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum wallet_transactions_type {
+  WELCOME_BONUS
+  SESSION_JOIN
+  SESSION_HOST_REWARD
+  STORE_PURCHASE
+  QUIZ_REWARD
+}
+
+enum sessions_type {
+  ONLINE
+  IN_PERSON
+}
+
+enum sessions_privacy {
+  PUBLIC
+  PRIVATE
+}
+
+enum users_status {
+  STUDENT
+  EMPLOYEE
+}
+
+enum sessions_status {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum Connection_status {
+  PENDING
+  ACCEPTED
+  REJECTED
+  REMOVE   //| CANCELLED | IGNORE// unfollow
+}

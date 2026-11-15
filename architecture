@@ -1,0 +1,93 @@
+my-nextjs-app/
+├── public/                  # Static assets (images, fonts)
+├── src/
+│   ├── app/                 # Next.js App Router (Routes & Layouts only)
+│   │   ├── layout.tsx       # Root layout
+│   │   ├── page.tsx         # Homepage route
+│   │   ├── (auth)/          # Route group (logical grouping, no URL impact)
+│   │   │   ├── login/
+│   │   │   │   └── page.tsx # /login route
+│   │   │   └── layout.tsx
+│   │   └── dashboard/
+│   │       ├── page.tsx     # /dashboard route
+│   │       └── loading.tsx  # Route-specific loading skeleton
+│   ├── components/          # Truly global, reusable UI elements (atoms/molecules)
+│   │   └── ui/
+│   │       ├── button.tsx
+│   │       └── input.tsx
+│   ├── features/            # Feature-driven modules (The core application logic)
+│   │   ├── auth/            # Encapsulated authentication feature
+│   │   │   ├── components/  # Feature-specific UI components
+│   │   │   ├── hooks/       # Custom React hooks for auth
+│   │   │   ├── actions.ts   # Next.js Server Actions for auth
+│   │   │   └── types.ts     # TypeScript interfaces for auth
+│   │   └── products/        # Encapsulated products feature
+│   ├── lib/                 # Core utility wrappers & configurations
+│   │   ├── prisma.ts        # Database client initialization
+│   │   └── utils.ts         # Global helper functions (e.g., clsx/tailwind-merge)
+│   └── types/               # Global TypeScript declarations
+├── .env.local               # Local environment variables
+├── next.config.js           # Next.js configuration
+├── package.json
+└── tsconfig.json
+
+
+
+
+
+src/
+├── app/
+│   ├── api/
+│   │   ├── auth/
+│   │   ├── users/
+│   │   ├── friends/
+│   │   └── notifications/
+│   │
+│   ├── login/
+│   ├── register/
+│   ├── dashboard/
+│   ├── friends/
+│   ├── profile/
+│   ├── game/
+│   │
+│   ├── layout.tsx
+│   └── page.tsx
+│
+├── components/
+│   ├── ui/
+│   ├── layout/
+│   ├── friends/
+│   ├── users/
+│   └── game/
+│
+├── services/
+│   ├── auth.service.ts
+│   ├── user.service.ts
+│   ├── friend.service.ts
+│   └── game.service.ts
+│
+├── lib/
+│   ├── db.ts
+│   ├── auth.ts
+│   ├── utils.ts
+│   └── validations.ts
+│
+├── hooks/
+│   ├── useAuth.ts
+│   ├── useFriends.ts
+│   └── useHeartbeat.ts
+│
+├── types/
+│   ├── user.ts
+│   ├── friend.ts
+│   └── game.ts
+│
+└── styles/
+    └── ...
+    
+prisma/
+└── schema.prisma
+
+public/
+├── images/
+└── icons/

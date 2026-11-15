@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+:root {
+  /* Base */
+  --background: #ffffff;
+  --foreground: #444050;
+
+  /* Brand */
+  --Primary: #4F46E5;
+  --Primary-Hover: #4338CA;
+
+  /* Semantic */
+  --Secondary: #64748B;
+  --Success: #16A34A;
+  --Danger: #DC2626;
+  --Warning: #D97706;
+  --Info: #0284C7;
+
+
+  /* Text */
+  --Title: #444050;
+  --Text: #6D6B77;
+
+  /* Icons */
+  --Icon: #444050;
+
+  /* Grays */
+  --Gray900: #1F2937;
+  --Gray600: #4B5563;
+  --Gray300: #D1D5DB;
+  --Gray100: #F3F4F6;
+
+  /* Modal / Surface */
+  --Surface: #ffffff;
+  --Overlay: rgba(0, 0, 0, 0.45);
+  --Modal-Shadow: 0 12px 40px rgba(47, 43, 61, 0.14);
+  
+}
+
+@theme inline {
+  /* Base */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Brand */
+  --color-primary: var(--Primary);
+  --color-primary-hover: var(--Primary-Hover);
+
+  /* Semantic */
+  --color-secondary: var(--Secondary);
+  --color-success: var(--Success);
+  --color-danger: var(--Danger);
+  --color-warning: var(--Warning);
+  --color-info: var(--Info);
+
+  --color-surface: var(--Surface);
+  --color-overlay: var(--Overlay);
+
+  --shadow-modal: var(--Modal-Shadow);
+
+  /* Text */
+  --color-title: var(--Title);
+  --color-text: var(--Text);
+
+  /* Icons */
+  --color-icon: var(--Icon);
+
+  /* Grays */
+  --color-gray-900: var(--Gray900);
+  --color-gray-600: var(--Gray600);
+  --color-gray-300: var(--Gray300);
+  --color-gray-100: var(--Gray100);
+
+  /* Fonts */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --background: #F8F7FA;
+    --foreground: #6D6B77;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
